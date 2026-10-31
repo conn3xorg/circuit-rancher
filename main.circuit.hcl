@@ -56,12 +56,11 @@ circuit "rancher" {
     }
   }
 
-  # circuit-k3s restarts k3s straight after its first start. On a busy host
-  # that can leave this CRD never established, so k3s silently skips Traefik
-  # and Rancher has no way in. Another restart clears it.
+  # k3s installs Traefik through this CRD, and Rancher is reached through
+  # Traefik. A restart can't clear one that's stuck, so stop with a pointer.
   step "helm_controller" {
     command {
-      command = "${local.wait_api}; ${local.crd_ready} --timeout=3m || { systemctl restart k3s; ${local.wait_api}; ${local.crd_ready} --timeout=5m; }"
+      command = "${local.wait_api}; for _ in $(seq 60); do ${local.crd_ready} --timeout=5s >/dev/null 2>&1 && exit 0; sleep 5; done; echo 'k3s CRDs did not become Established. See Troubleshooting in the circuit-k3s README: https://github.com/conn3xorg/circuit-k3s#troubleshooting' >&2; exit 1"
     }
   }
 
