@@ -8,7 +8,7 @@ The part that usually bites is the Kubernetes version. Rancher supports a narrow
 
 ```hcl
 module "k3s" {
-  source = "github.com/conn3xorg/circuit-k3s?ref=v0.1.3"
+  source = "github.com/conn3xorg/circuit-k3s?ref=v0.1.4"
 
   servers              = { cp1 = "203.0.113.10" }
   token                = var.k3s_token
@@ -23,7 +23,7 @@ module "k3s" {
 }
 
 module "rancher" {
-  source     = "github.com/conn3xorg/circuit-rancher?ref=v0.1.0"
+  source     = "github.com/conn3xorg/circuit-rancher?ref=v0.1.1"
   depends_on = [module.k3s]
 
   server               = "203.0.113.10"
@@ -71,7 +71,7 @@ Only the default has been run through this circuit. The other choices are in [Ra
 On the server you name, in order:
 
 1. Checks that the k3s installed there is on `k3s_minors`, and stops with a message if it isn't. The check runs on every plan, so a later k3s upgrade past Rancher's range shows up too.
-2. Waits for k3s's `helmcharts` CRD to be established, restarting k3s once if it's stuck. k3s installs Traefik through that CRD, and Rancher is reached through Traefik.
+2. Waits for k3s's `helmcharts` CRD to be established. k3s installs Traefik through that CRD, and Rancher is reached through Traefik. If it stays stuck, the apply fails and points to [Troubleshooting](https://github.com/conn3xorg/circuit-k3s#troubleshooting) in circuit-k3s.
 3. Downloads Helm and both charts to `/var/lib/conn3x-rancher`, checking each SHA-256. Helm stays there rather than in your `PATH`, so it won't get in the way of a Helm you already have.
 4. Writes the bootstrap password to `/etc/rancher/manager/bootstrap-password` and your chart values to `/etc/rancher/manager/values.yaml`, both mode `0600`.
 5. Creates the `cattle-system` namespace and the `bootstrap-secret` secret from that file.
@@ -128,7 +128,7 @@ Set `rancher_version`, `rancher_chart_sha256` and `k3s_minors` together, reading
 
 ## Requirements
 
-Requires Conn3x v0.6.9 or later, a k3s server on a Kubernetes version Rancher supports, and outbound HTTPS to `get.helm.sh`, `charts.jetstack.io`, `releases.rancher.com` and the container registries. Rancher asks for at least 4 vCPUs and 16 GB of memory per node, on SSDs, and three nodes for production.
+Requires Conn3x v0.6.9 or later, circuit-k3s v0.1.4 or later if that's what built your cluster, a k3s server on a Kubernetes version Rancher supports, and outbound HTTPS to `get.helm.sh`, `charts.jetstack.io`, `releases.rancher.com` and the container registries. Rancher asks for at least 4 vCPUs and 16 GB of memory per node, on SSDs, and three nodes for production.
 
 ## Tested on
 
