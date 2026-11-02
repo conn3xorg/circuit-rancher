@@ -1,5 +1,7 @@
 # circuit-rancher
 
+[![Conn3x grade](https://conn3x.org/circuits/rancher/grade.svg)](https://conn3x.org/circuits/rancher/grade)
+
 A Conn3x circuit that installs [Rancher Manager](https://www.rancher.com) on a k3s cluster, the way Rancher documents it: cert-manager and the Rancher chart, through Helm, at versions you pin. It's for the cluster you've already built with [circuit-k3s](https://github.com/conn3xorg/circuit-k3s), so one configuration takes you from bare hosts to a Rancher login page.
 
 The part that usually bites is the Kubernetes version. Rancher supports a narrow range, and k3s's newest release is often past it: Rancher 2.15.3 stops at Kubernetes 1.36, while circuit-k3s defaults to v1.37. So you pin k3s to a supported release, as below, and this circuit checks the version before it installs anything.
