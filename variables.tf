@@ -28,6 +28,11 @@ variable "rancher_version" {
   type        = string
   default     = "2.15.3"
   description = "Rancher chart version from the stable repository, without a v. Change it with rancher_chart_sha256 and k3s_minors."
+
+  validation {
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$", var.rancher_version))
+    error_message = "rancher_version is a chart version without the leading v, such as \"2.15.3\"."
+  }
 }
 
 variable "rancher_chart_sha256" {
@@ -46,6 +51,11 @@ variable "cert_manager_version" {
   type        = string
   default     = "v1.21.3"
   description = "cert-manager chart version. Change it with cert_manager_chart_sha256."
+
+  validation {
+    condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$", var.cert_manager_version))
+    error_message = "cert_manager_version is a chart version with the leading v, such as \"v1.21.3\"."
+  }
 }
 
 variable "cert_manager_chart_sha256" {
@@ -58,6 +68,11 @@ variable "helm_version" {
   type        = string
   default     = "v3.22.1"
   description = "Helm release to install under /var/lib/conn3x-rancher. Rancher's docs ask for Helm 3. Change it with helm_checksums."
+
+  validation {
+    condition     = can(regex("^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$", var.helm_version))
+    error_message = "helm_version is a Helm release tag with the leading v, such as \"v3.22.1\"."
+  }
 }
 
 variable "helm_checksums" {
