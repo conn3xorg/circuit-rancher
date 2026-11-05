@@ -25,7 +25,7 @@ module "k3s" {
 }
 
 module "rancher" {
-  source     = "github.com/conn3xorg/circuit-rancher?ref=v0.1.1"
+  source     = "github.com/conn3xorg/circuit-rancher?ref=v0.1.2"
   depends_on = [module.k3s]
 
   server               = "203.0.113.10"
