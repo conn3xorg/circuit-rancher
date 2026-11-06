@@ -20,6 +20,18 @@ variable "bootstrap_password" {
   default   = "example-bootstrap-change-me"
 }
 
+# CI sets these to install an older Rancher first, then upgrades to the
+# circuit's own pin by applying again without them.
+variable "rancher_version" {
+  type    = string
+  default = null
+}
+
+variable "rancher_chart_sha256" {
+  type    = string
+  default = null
+}
+
 module "k3s" {
   source = "github.com/conn3xorg/circuit-k3s?ref=v0.1.5"
 
@@ -45,6 +57,9 @@ module "rancher" {
   server             = "127.0.0.1"
   hostname           = var.hostname
   bootstrap_password = var.bootstrap_password
+
+  rancher_version      = var.rancher_version
+  rancher_chart_sha256 = var.rancher_chart_sha256
 
   ssh_port             = var.port
   ssh_private_key_file = "./id_ed25519"
