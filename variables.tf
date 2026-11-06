@@ -27,7 +27,8 @@ variable "bootstrap_password" {
 variable "rancher_version" {
   type        = string
   default     = "2.15.3"
-  description = "Rancher chart version from the stable repository, without a v. Change it with rancher_chart_sha256 and k3s_minors."
+  nullable    = false
+  description = "Rancher chart version from the stable repository, without a v. Change it with rancher_chart_sha256 and k3s_minors. Null means the default."
 
   validation {
     condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$", var.rancher_version))
@@ -38,7 +39,8 @@ variable "rancher_version" {
 variable "rancher_chart_sha256" {
   type        = string
   default     = "343888c66421a9f5666b562cdfeca751d63da994edbe7b1b36752f8ffcf5ecd4"
-  description = "SHA-256 of the Rancher chart, rancher-VERSION.tgz."
+  nullable    = false
+  description = "SHA-256 of the Rancher chart, rancher-VERSION.tgz. Null means the default."
 }
 
 variable "k3s_minors" {

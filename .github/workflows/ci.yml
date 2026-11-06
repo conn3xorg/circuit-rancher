@@ -77,6 +77,41 @@ jobs:
       - name: Check the API answers, the login works and the local cluster is active
         working-directory: examples/local
         run: sudo podman exec -i circuit-rancher sh -s < check.sh
+      # The k3s token and the bootstrap password are ephemeral and reach the
+      # host write-only, so state holds neither of them, and nothing Conn3x
+      # writes under .terraform does either.
+      - name: Check the token and bootstrap password stay out of state
+        working-directory: examples/local
+        run: |
+          test -s terraform.tfstate || { echo "No terraform.tfstate to check." >&2; exit 1; }
+          if grep -rqF --exclude-dir=modules -e example-token-change-me -e example-bootstrap-change-me terraform.tfstate .terraform/; then
+            echo "The k3s token or the bootstrap password is in terraform.tfstate or under .terraform/." >&2
+            exit 1
+          fi
+      # A fresh host gets Rancher 2.15.2, then the circuit's own pin is
+      # applied over it, the way someone moves to a new release of this
+      # circuit. Helm upgrades the release in place, and the login and the
+      # local cluster have to come back on the new Rancher.
+      - name: Upgrade from Rancher 2.15.2 on a fresh host, then plan again with no changes
+        working-directory: examples/local
+        env:
+          CONTAINERFILE: ${{ github.workspace }}/conn3x/test/images/${{ matrix.distro }}/Containerfile
+          PODMAN: sudo podman
+        run: |
+          ./down.sh
+          ./up.sh
+          conn3x init
+          conn3x apply -auto-approve -var rancher_version=2.15.2 \
+            -var rancher_chart_sha256=855cb9be954f65a31b9a8c77f7aebce125c2d7797425257d21d35e3380816ac8
+          image() { sudo podman exec circuit-rancher k3s kubectl -n cattle-system get deploy rancher -o jsonpath='{.spec.template.spec.containers[0].image}'; }
+          image | grep -q ':v2.15.2$'
+          conn3x apply -auto-approve
+          conn3x plan -detailed-exitcode
+          want=$(sed -n '/^variable "rancher_version"/,/^}/s/^ *default *= *"\(.*\)"/\1/p' ../../variables.tf)
+          image | grep -q ":v$want\$"
+      - name: Check the upgraded Rancher's API, login and local cluster
+        working-directory: examples/local
+        run: sudo podman exec -i circuit-rancher sh -s < check.sh
       - name: Show what's running
         if: failure()
         run: sudo podman exec circuit-rancher sh -c 'k3s kubectl get pods -A; k3s kubectl -n cattle-system logs deploy/rancher --tail=100; journalctl -u k3s --no-pager -n 100' || true
