@@ -59,6 +59,7 @@ circuit "rancher" {
   # k3s installs Traefik through this CRD, and Rancher is reached through
   # Traefik. A restart can't clear one that's stuck, so stop with a pointer.
   step "helm_controller" {
+    # conn3x-lint:ignore C3X101 a gate before Rancher installs anything, not state to keep; the install steps are checked on every plan
     command {
       command = "${local.wait_api}; for _ in $(seq 60); do ${local.crd_ready} --timeout=5s >/dev/null 2>&1 && exit 0; sleep 5; done; echo 'k3s CRDs did not become Established. See Troubleshooting in the circuit-k3s README: https://github.com/conn3xorg/circuit-k3s#troubleshooting' >&2; exit 1"
     }
